@@ -6,8 +6,9 @@ class GameCrawlerSpider(scrapy.Spider):
     name = "game_crawler"
     allowed_domains = ["play.esea.net"]
     start_urls = (
-        'http://www.play.esea.net/',
+        'https://play.esea.net/match/14113162',
     )
 
     def parse(self, response):
-        pass
+        title = response.css('.title::text').extract()
+        yield {'title': title}
