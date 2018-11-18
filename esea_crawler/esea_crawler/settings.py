@@ -16,7 +16,9 @@ NEWSPIDER_MODULE = 'esea_crawler.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'esea_crawler (+http://www.yourdomain.com)'
+# https://www.whoishostingthis.com/tools/user-agent/
+# USER_AGENT = 'esea_crawler (+http://www.yourdomain.com)'
+USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS=32
