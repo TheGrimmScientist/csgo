@@ -1,2 +1,3 @@
 splinter
 chromedriver-binary
+tqdm

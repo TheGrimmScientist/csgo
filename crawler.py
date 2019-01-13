@@ -1,10 +1,13 @@
 import sys
 from pathlib import Path
 from time import sleep
-import chromedriver_binary
 import datetime
+from contextlib import closing
 
+from tqdm import tqdm
+import chromedriver_binary
 from splinter import Browser
+
 
 sys.path.append(str(Path(__file__).parent / 'chromedriver'))
 
@@ -116,6 +119,17 @@ def search_for_page_range_upper():
     print("final: {}".format(current))
 
 
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        print("starting function: {}".format(func.__name__))
+        start_time = datetime.datetime.now()
+        ret = func(*args, **kwargs)
+        print("completed, total time: {}".format(datetime.datetime.now() - start_time))
+        return ret
+    return wrapper
+
+
+# @timeit
 def check_if_game_page_exists(game_id):
     with Browser('chrome') as browser:
         browser.visit('https://play.esea.net/match/{}'.format(game_id))
@@ -124,10 +138,40 @@ def check_if_game_page_exists(game_id):
     return flag
 
 
+class GamePage:
+    def __init__(self):
+        self.browser = Browser('chrome')
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.browser.__exit__(exc_type, exc_val, exc_tb)
+
+    def visit_range(self, first_game_id, last_game_id):
+        for game_id in tqdm(range(first_game_id, last_game_id + 1)):
+            self.browser.visit('https://play.esea.net/match/{}'.format(game_id))
+
+
+def visit_range_old_way(first_game_id, last_game_id):
+    for game_id in tqdm(range(first_game_id, last_game_id+1)):
+        check_if_game_page_exists(game_id)
+
+
 if __name__ == "__main__":
 
-    search_for_page_range_lower()  # 12155511 is first existing
+    # search_for_page_range_lower()  # 12155511 is first existing
     # search_for_page_range_upper()  # 14394641 is the last existing
+
+    first_game_id = 13155511
+    last_game_id = 13155511 + 10
+
+    print("timing for the old way:")
+    visit_range_old_way(first_game_id, last_game_id)
+
+    print("timing for the new way:")
+    with GamePage() as scraper:
+        scraper.visit_range(first_game_id, last_game_id)
 
 
     # esea_url = 'https://play.esea.net/match/14255802'
