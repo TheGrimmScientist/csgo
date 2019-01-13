@@ -50,7 +50,7 @@ def get_team_players(browser, team):
 
 
 def parse_game_page(esea_url):
-    with Browser('chrome') as browser:
+    with Browser('chrome', incognito=True) as browser:
 
         browser.visit(esea_url)
 
@@ -131,7 +131,7 @@ def timeit(func):
 
 # @timeit
 def check_if_game_page_exists(game_id):
-    with Browser('chrome') as browser:
+    with Browser('chrome', incognito=True) as browser:
         browser.visit('https://play.esea.net/match/{}'.format(game_id))
         flag = len(browser.find_by_text('Invalid parent item')) == 0
 
@@ -140,7 +140,7 @@ def check_if_game_page_exists(game_id):
 
 class GamePage:
     def __init__(self):
-        self.browser = Browser('chrome')
+        self.browser = Browser('chrome', incognito=True)
 
     def __enter__(self):
         return self
