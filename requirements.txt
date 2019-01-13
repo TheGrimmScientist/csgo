@@ -1,3 +1,4 @@
+six
 splinter
 chromedriver-binary
 tqdm
