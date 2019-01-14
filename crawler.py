@@ -4,12 +4,14 @@ from time import sleep
 import datetime
 from contextlib import closing
 
+from splinter.exceptions import ElementDoesNotExist
 from tqdm import tqdm
 import chromedriver_binary
 from splinter import Browser
 
 
 sys.path.append(str(Path(__file__).parent / 'chromedriver'))
+
 
 def get_team_scores(browser):
     team_a_score = browser.find_by_css(r"#body-match-stats > table:nth-child(2) > tbody > tr:nth-child(2) > td:nth-child(5)").first.text
@@ -49,29 +51,17 @@ def get_team_players(browser, team):
     return team_players
 
 
-def parse_game_page(esea_url):
-    with Browser('chrome', incognito=True) as browser:
+def parse_game_page(browser, esea_url):
+    browser.visit(esea_url)
 
-        browser.visit(esea_url)
+    team_a_score, team_b_score = get_team_scores(browser)
+    # print("team a got: {}\nteam b got: {}".format(team_a_score, team_b_score))
 
-        team_a_score, team_b_score = get_team_scores(browser)
-        print("team a got: {}\nteam b got: {}".format(team_a_score, team_b_score))
+    team_a_players = get_team_players(browser, 1)
+    team_b_players = get_team_players(browser, 2)
 
-        team_a_players = get_team_players(browser, 1)
-        team_b_players = get_team_players(browser, 2)
+    return team_a_players, team_b_players
 
-        print(list(map(str, team_a_players)))
-        print(list(map(str, team_b_players)))
-        # thing = browser.find_by_text('Team A Statistics')
-        # print(thing.first)
-
-        # print(browser.find_element_by_text('Team A Statistics'))
-
-        # for s in range(5):
-        # sleep(5)
-        # print(browser.html)
-
-    return True
 
 def search_for_page_range_lower(starting=12255802):
     """
@@ -140,7 +130,7 @@ def check_if_game_page_exists(game_id):
 
 class GamePage:
     def __init__(self):
-        self.browser = Browser('chrome', incognito=True)
+        self.browser = Browser('chrome', incognito=True, headless=True)
 
     def __enter__(self):
         return self
@@ -148,9 +138,28 @@ class GamePage:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.browser.__exit__(exc_type, exc_val, exc_tb)
 
+
     def visit_range(self, first_game_id, last_game_id):
         for game_id in tqdm(range(first_game_id, last_game_id + 1)):
             self.browser.visit('https://play.esea.net/match/{}'.format(game_id))
+
+    def get_results_from_range(self, first_game_id, last_game_id):
+        # TODO: Gracefully handle a page not existing, and keep a tally of which don't.
+        results = []
+        for game_id in tqdm(range(first_game_id, last_game_id + 1)):
+            url = 'https://play.esea.net/match/{}'.format(game_id)
+            this_page_data = self.parse_game_page(url)
+            results.append(this_page_data)
+        return results
+
+    def parse_game_page(self, url):
+        try:
+            page_results = parse_game_page(self.browser, url)
+        except ElementDoesNotExist:
+            # splinter.exceptions.ElementDoesNotExist: no elements could be found with css "#body-match-stats > table:nth-child(2) > tbody > tr:nth-child(2) > td:nth-child(5)"
+            page_results = False
+
+        return page_results
 
 
 def visit_range_old_way(first_game_id, last_game_id):
@@ -166,13 +175,27 @@ if __name__ == "__main__":
     first_game_id = 13155511
     last_game_id = 13155511 + 10
 
-    print("timing for the old way:")
-    visit_range_old_way(first_game_id, last_game_id)
+    # print("timing for the old way:")
+    # visit_range_old_way(first_game_id, last_game_id)
+    # Around 4 seconds per page.
 
     print("timing for the new way:")
+    results = []
     with GamePage() as scraper:
-        scraper.visit_range(first_game_id, last_game_id)
+        results = scraper.get_results_from_range(first_game_id, last_game_id)
 
+    # for result in results:
+    #     if result:
+    #         team_a_players, team_b_players = result
+    #         print(list(map(str, team_a_players)))
+    #         print(list(map(str, team_b_players)))
+    #     else:
+    #         print(result)
 
-    # esea_url = 'https://play.esea.net/match/14255802'
-    # parse_game_page(esea_url)
+    n_with_data = len([r for r in results if r])
+    n = len(results)
+
+    if n_with_data:
+        print("{0:.2f}.  {1} out of {2} had data.".format(
+            n_with_data/n, n_with_data, n))
+
