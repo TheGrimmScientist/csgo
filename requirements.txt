@@ -2,3 +2,4 @@ six
 splinter
 chromedriver-binary
 tqdm
+sqlalchemy
