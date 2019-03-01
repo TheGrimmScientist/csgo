@@ -3,3 +3,4 @@ splinter
 chromedriver-binary
 tqdm
 sqlalchemy
+django
