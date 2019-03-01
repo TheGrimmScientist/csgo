@@ -14,8 +14,9 @@ sys.path.append(str(Path(__file__).parent / 'chromedriver'))
 
 
 def get_team_scores(browser):
-    team_a_score = browser.find_by_css(r"#body-match-stats > table:nth-child(2) > tbody > tr:nth-child(2) > td:nth-child(5)").first.text
-    team_b_score = browser.find_by_css(r"#body-match-stats > table:nth-child(2) > tbody > tr:nth-child(3) > td:nth-child(5)").first.text
+
+    team_a_score = browser.find_by_xpath(r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[1]/span[2]').first.text
+    team_b_score = browser.find_by_xpath(r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[4]/div[1]/span[2]').first.text
     return team_a_score, team_b_score
 
 
@@ -55,8 +56,7 @@ def parse_game_page(browser, esea_url):
     browser.visit(esea_url)
 
     team_a_score, team_b_score = get_team_scores(browser)
-    # print("team a got: {}\nteam b got: {}".format(team_a_score, team_b_score))
-
+    print(team_a_score, team_b_score)
     team_a_players = get_team_players(browser, 1)
     team_b_players = get_team_players(browser, 2)
 
@@ -150,6 +150,7 @@ class GamePage:
             url = 'https://play.esea.net/match/{}'.format(game_id)
             this_page_data = self.parse_game_page(url)
             results.append(this_page_data)
+            print()
         return results
 
     def parse_game_page(self, url):
@@ -172,8 +173,10 @@ if __name__ == "__main__":
     # search_for_page_range_lower()  # 12155511 is first existing
     # search_for_page_range_upper()  # 14394641 is the last existing
 
-    first_game_id = 13155511
-    last_game_id = 13155511 + 10
+    first_game_id = 14633571
+    last_game_id = 14633571 + 10
+
+    # https://play.esea.net/users/13155511
 
     # print("timing for the old way:")
     # visit_range_old_way(first_game_id, last_game_id)
