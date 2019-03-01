@@ -172,8 +172,12 @@ if __name__ == "__main__":
     # search_for_page_range_lower()  # 12155511 is first existing
     # search_for_page_range_upper()  # 14394641 is the last existing
 
-    first_game_id = 13155511
-    last_game_id = 13155511 + 10
+    # 0/100 in this range had data..
+    # first_game_id = 10155511
+    # last_game_id = 10155511 + 100
+
+    first_game_id = 12155511 - 101
+    last_game_id = 12155511 - 1
 
     # print("timing for the old way:")
     # visit_range_old_way(first_game_id, last_game_id)
@@ -198,4 +202,6 @@ if __name__ == "__main__":
     if n_with_data:
         print("{0:.2f}.  {1} out of {2} had data.".format(
             n_with_data/n, n_with_data, n))
+    else:
+        print("no data")
 
