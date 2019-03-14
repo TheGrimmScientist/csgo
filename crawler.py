@@ -1,13 +1,15 @@
+import logging
 import sys
 from pathlib import Path
-from time import sleep
 import datetime
-from contextlib import closing
 
 from splinter.exceptions import ElementDoesNotExist
 from tqdm import tqdm
 import chromedriver_binary
 from splinter import Browser
+import asyncio
+import concurrent.futures
+
 
 
 sys.path.append(str(Path(__file__).parent / 'chromedriver'))
@@ -175,7 +177,45 @@ def visit_range_old_way(first_game_id, last_game_id):
         check_if_game_page_exists(game_id)
 
 
+def handle_game_id(game_id):
+    with GamePage() as scraper:
+        url = 'https://play.esea.net/match/{}'.format(game_id)
+        this_page_data = scraper.parse_game_page(url)
+        print(this_page_data)
+
+
+async def _get_results_from_list_inner(game_id_list, executor):
+    log = logging.getLogger('get_game_data')
+    log.info('grabbing data from {} game ids'.format(len(game_id_list)))
+    log.debug('game id list: \n{}'.format(game_id_list))
+    loop = asyncio.get_event_loop()
+    full_task_list = [
+        loop.run_in_executor(executor, handle_game_id, game_id)
+        for game_id in game_id_list
+    ]
+    completed, pending = asyncio.wait(full_task_list)
+    results = [t.results() for t in completed]
+    log.info('results: {}'.format(results))
+    log.info('completed')
+
+
+def get_results_from_list(game_id_list):
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+
+    event_loop = asyncio.get_event_loop()
+    try:
+        event_loop.run_until_complete(_get_results_from_list_inner(game_id_list, executor))
+    finally:
+        event_loop.close()
+
+
 if __name__ == "__main__":
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(threadName)10s %(name)18s: %(message)s',
+        stream=sys.stderr,
+    )
 
     # search_for_page_range_lower()  # 12155511 is first existing
     # search_for_page_range_upper()  # 14394641 is the last existing
@@ -189,9 +229,10 @@ if __name__ == "__main__":
     first_game_id = 14633571
     last_game_id = 14633571 + 10
 
-
-    first_game_id = 12155511 - 101
-    last_game_id = 12155511 - 1
+    get_results_from_list(list(range(first_game_id, last_game_id)))
+    assert False, 'here'
+    # first_game_id = 12155511 - 101
+    # last_game_id = 12155511 - 1
 
     # print("timing for the old way:")
     # visit_range_old_way(first_game_id, last_game_id)
@@ -218,4 +259,3 @@ if __name__ == "__main__":
             n_with_data/n, n_with_data, n))
     else:
         print("no data")
-
