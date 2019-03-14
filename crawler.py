@@ -14,10 +14,13 @@ sys.path.append(str(Path(__file__).parent / 'chromedriver'))
 
 
 def get_team_scores(browser):
-
+    # //*[@id="root"]/div/div[2]/div[2]/div/div/div[1]/div[2]/div[2]/div/span[1]
+    # // *[ @ id = "root"] / div / div[2] / div[2] / div / div / div[1] / div[2] / div[2] / div / span[1]
+    # team_a_score = browser.find_by_xpath(
+    #     r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[1]/span[2]').first.tex
     team_a_score = browser.find_by_xpath(r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[1]/span[2]').first.text
     team_b_score = browser.find_by_xpath(r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[4]/div[1]/span[2]').first.text
-    return team_a_score, team_b_score
+    return int(team_a_score[1:-1]), int(team_b_score[1:-1])
 
 
 class PlayerStats():
@@ -41,7 +44,7 @@ class PlayerStats():
 def get_team_players(browser, team):
     team_players = []
     for i in range(1, 6):
-        node = browser.find_by_css("#body-match-total{} > tr:nth-child({})".format(team, i))
+        node = browser.find_by_xpath("// *[ @ id = 'root'] / div / div[2] / div[2] / div[1] / div / div[3] / table / tbody[{}] / tr[{}]".format(team, i))
         cells = node.find_by_tag('td')
         name = cells[0].text
         rms = cells[1].text
@@ -54,9 +57,12 @@ def get_team_players(browser, team):
 
 def parse_game_page(browser, esea_url):
     browser.visit(esea_url)
+    from pathlib import Path
+    p = Path('/home/james/test/test.html')
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(browser.html)
 
     team_a_score, team_b_score = get_team_scores(browser)
-    print(team_a_score, team_b_score)
     team_a_players = get_team_players(browser, 1)
     team_b_players = get_team_players(browser, 2)
 
@@ -130,7 +136,8 @@ def check_if_game_page_exists(game_id):
 
 class GamePage:
     def __init__(self):
-        self.browser = Browser('chrome', incognito=True, headless=True)
+        self.browser = Browser('chrome', incognito=True)
+        self.browser.driver.set_window_size(640,480)
 
     def __enter__(self):
         return self
