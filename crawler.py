@@ -1,28 +1,28 @@
-import logging
 import sys
 from pathlib import Path
+from time import sleep
 import datetime
+from contextlib import closing
+import trio
+import logging
 
 from splinter.exceptions import ElementDoesNotExist
 from tqdm import tqdm
 import chromedriver_binary
 from splinter import Browser
-import asyncio
 import concurrent.futures
-
+import asyncio
+import functools
 
 
 sys.path.append(str(Path(__file__).parent / 'chromedriver'))
 
 
 def get_team_scores(browser):
-    # //*[@id="root"]/div/div[2]/div[2]/div/div/div[1]/div[2]/div[2]/div/span[1]
-    # // *[ @ id = "root"] / div / div[2] / div[2] / div / div / div[1] / div[2] / div[2] / div / span[1]
-    # team_a_score = browser.find_by_xpath(
-    #     r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[1]/span[2]').first.tex
+
     team_a_score = browser.find_by_xpath(r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[1]/span[2]').first.text
     team_b_score = browser.find_by_xpath(r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[4]/div[1]/span[2]').first.text
-    return int(team_a_score[1:-1]), int(team_b_score[1:-1])
+    return team_a_score, team_b_score
 
 
 class PlayerStats():
@@ -46,7 +46,7 @@ class PlayerStats():
 def get_team_players(browser, team):
     team_players = []
     for i in range(1, 6):
-        node = browser.find_by_xpath("// *[ @ id = 'root'] / div / div[2] / div[2] / div[1] / div / div[3] / table / tbody[{}] / tr[{}]".format(team, i))
+        node = browser.find_by_css("#body-match-total{} > tr:nth-child({})".format(team, i))
         cells = node.find_by_tag('td')
         name = cells[0].text
         rms = cells[1].text
@@ -59,12 +59,9 @@ def get_team_players(browser, team):
 
 def parse_game_page(browser, esea_url):
     browser.visit(esea_url)
-    from pathlib import Path
-    p = Path('/home/james/test/test.html')
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(browser.html)
 
     team_a_score, team_b_score = get_team_scores(browser)
+    print(team_a_score, team_b_score)
     team_a_players = get_team_players(browser, 1)
     team_b_players = get_team_players(browser, 2)
 
@@ -138,8 +135,7 @@ def check_if_game_page_exists(game_id):
 
 class GamePage:
     def __init__(self):
-        self.browser = Browser('chrome', incognito=True)
-        self.browser.driver.set_window_size(640,480)
+        self.browser = Browser('chrome', incognito=True, headless=True)
 
     def __enter__(self):
         return self
@@ -177,36 +173,16 @@ def visit_range_old_way(first_game_id, last_game_id):
         check_if_game_page_exists(game_id)
 
 
-def handle_game_id(game_id):
+async def handle_game_id(game_id):
     with GamePage() as scraper:
-        url = 'https://play.esea.net/match/{}'.format(game_id)
-        this_page_data = scraper.parse_game_page(url)
-        print(this_page_data)
-
-
-async def _get_results_from_list_inner(game_id_list, executor):
-    log = logging.getLogger('get_game_data')
-    log.info('grabbing data from {} game ids'.format(len(game_id_list)))
-    log.debug('game id list: \n{}'.format(game_id_list))
-    loop = asyncio.get_event_loop()
-    full_task_list = [
-        loop.run_in_executor(executor, handle_game_id, game_id)
-        for game_id in game_id_list
-    ]
-    completed, pending = asyncio.wait(full_task_list)
-    results = [t.results() for t in completed]
-    log.info('results: {}'.format(results))
-    log.info('completed')
+        results = scraper.get_results_from_range(first_game_id, last_game_id)
+        print(results)
 
 
 def get_results_from_list(game_id_list):
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
-
-    event_loop = asyncio.get_event_loop()
-    try:
-        event_loop.run_until_complete(_get_results_from_list_inner(game_id_list, executor))
-    finally:
-        event_loop.close()
+    limiter = trio.CapacityLimiter(10)
+    for game_id in tqdm(game_id_list):
+        await trio.run_sync_in_worker_thread(handle_game_id, game_id, limiter)
 
 
 if __name__ == "__main__":
@@ -220,23 +196,20 @@ if __name__ == "__main__":
     # search_for_page_range_lower()  # 12155511 is first existing
     # search_for_page_range_upper()  # 14394641 is the last existing
 
-    # https://play.esea.net/users/13155511
     # 0/100 in this range had data..
     # first_game_id = 10155511
     # last_game_id = 10155511 + 100
-
-
     first_game_id = 14633571
     last_game_id = 14633571 + 10
 
-    get_results_from_list(list(range(first_game_id, last_game_id)))
-    assert False, 'here'
-    # first_game_id = 12155511 - 101
-    # last_game_id = 12155511 - 1
+    # https://play.esea.net/users/13155511
+
 
     # print("timing for the old way:")
     # visit_range_old_way(first_game_id, last_game_id)
     # Around 4 seconds per page.
+    get_results_from_list(list(range(first_game_id, last_game_id)))
+    sys.exit(0)
 
     print("timing for the new way:")
     results = []
@@ -259,3 +232,4 @@ if __name__ == "__main__":
             n_with_data/n, n_with_data, n))
     else:
         print("no data")
+
