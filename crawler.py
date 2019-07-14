@@ -3,7 +3,6 @@ from pathlib import Path
 from time import sleep
 import datetime
 from contextlib import closing
-import trio
 import logging
 
 from splinter.exceptions import ElementDoesNotExist
@@ -202,8 +201,6 @@ if __name__ == "__main__":
     # print("timing for the old way:")
     # visit_range_old_way(first_game_id, last_game_id)
     # Around 4 seconds per page.
-    trio.run(get_results_from_list, list(range(first_game_id, last_game_id)))
-    sys.exit(0)
 
     print("timing for the new way:")
     results = []
