@@ -127,3 +127,36 @@ STATIC_URL = '/static/'
 
 
 sys.path.append(str(Path(__file__).parent / 'chromedriver'))
+
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(threadName)10s %(name)18s: %(message)s',
+#     stream=sys.stderr,
+# )
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+    },
+}
