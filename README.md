@@ -1,7 +1,7 @@
 # cs_ranker
 
-# Scraper
+# ESEA Scraper
 
-to run initial scraper, do
+After installing everything, do:
 
-    scrapy runspider esea_crawler/esea_crawler/spiders/game_crawler.py
+    python manage.py scrape_esea
