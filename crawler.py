@@ -143,7 +143,6 @@ class GamePage:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.browser.__exit__(exc_type, exc_val, exc_tb)
 
-
     def visit_range(self, first_game_id, last_game_id):
         for game_id in tqdm(range(first_game_id, last_game_id + 1)):
             self.browser.visit('https://play.esea.net/match/{}'.format(game_id))
@@ -169,20 +168,15 @@ class GamePage:
 
 
 def visit_range_old_way(first_game_id, last_game_id):
-    for game_id in tqdm(range(first_game_id, last_game_id+1)):
+    for game_id in tqdm(range(first_game_id, last_game_id + 1)):
         check_if_game_page_exists(game_id)
 
 
-async def handle_game_id(game_id):
+def handle_game_id(game_id):
     with GamePage() as scraper:
-        results = scraper.get_results_from_range(first_game_id, last_game_id)
-        print(results)
-
-
-def get_results_from_list(game_id_list):
-    limiter = trio.CapacityLimiter(10)
-    for game_id in tqdm(game_id_list):
-        await trio.run_sync_in_worker_thread(handle_game_id, game_id, limiter)
+        url = 'https://play.esea.net/match/{}'.format(game_id)
+        this_page_data = scraper.parse_game_page(url)
+        print(this_page_data)
 
 
 if __name__ == "__main__":
@@ -208,7 +202,7 @@ if __name__ == "__main__":
     # print("timing for the old way:")
     # visit_range_old_way(first_game_id, last_game_id)
     # Around 4 seconds per page.
-    get_results_from_list(list(range(first_game_id, last_game_id)))
+    trio.run(get_results_from_list, list(range(first_game_id, last_game_id)))
     sys.exit(0)
 
     print("timing for the new way:")
