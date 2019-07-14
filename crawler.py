@@ -19,8 +19,9 @@ sys.path.append(str(Path(__file__).parent / 'chromedriver'))
 
 def get_team_scores(browser):
 
-    team_a_score = browser.find_by_xpath(r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[1]/span[2]').first.text
-    team_b_score = browser.find_by_xpath(r'//*[@id="root"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div[4]/div[1]/span[2]').first.text
+    team_a_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[3]/div[1]/table/tbody/tr[1]/td[2]').first.text
+    team_b_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[3]/div[1]/table/tbody/tr[2]/td[2]').first.text
+
     return team_a_score, team_b_score
 
 
@@ -44,8 +45,11 @@ class PlayerStats():
 
 def get_team_players(browser, team):
     team_players = []
-    for i in range(1, 6):
-        node = browser.find_by_css("#body-match-total{} > tr:nth-child({})".format(team, i))
+
+
+    for i in range(1, 6):  # 5 players, one indexed
+
+        node = browser.find_by_css(f"#root > main > div> div > div > div > div:nth-child(4) > div > table > tbody:nth-child({team*2}) > tr:nth-child({i})")
         cells = node.find_by_tag('td')
         name = cells[0].text
         rms = cells[1].text
@@ -134,7 +138,8 @@ def check_if_game_page_exists(game_id):
 
 class GamePage:
     def __init__(self):
-        self.browser = Browser('chrome', incognito=True, headless=True)
+        self.browser = Browser('chrome', incognito=True, headless=False)
+        self.browser.driver.set_window_size(640, 480)
 
     def __enter__(self):
         return self
