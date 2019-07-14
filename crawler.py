@@ -35,6 +35,11 @@ class PlayerStats():
         self.rms = rms
         self.kills = kills
 
+
+    def __repr__(self):
+        return "player name is: {}, player url is: {}".format(self.name, self.link)
+
+
     def __str__(self):
         return "player name is: {}, player url is: {}".format(self.name, self.link)
 
