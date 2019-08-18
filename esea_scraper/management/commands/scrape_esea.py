@@ -9,7 +9,8 @@ import chromedriver_binary
 from splinter import Browser
 
 # sys.path.append(str(Path(__file__).parent / 'chromedriver'))
-from csranker.settings import INVALID_GAME_PAGE
+from csranker.settings import INVALID_GAME_PAGE, GAME_PAGE_WITH_MATCH_RECAP, \
+    BASELINE_GAME_PAGE
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +184,10 @@ def handle_game_id(game_id):
 def identify_page_type(page):
     if page.is_text_present("Invalid Match"):
         return INVALID_GAME_PAGE
+    elif page.is_text_present("Detailed advanced match statistics were not processed for this match"):
+        return BASELINE_GAME_PAGE
+    elif page.is_text_present("Match Recap"):
+        return GAME_PAGE_WITH_MATCH_RECAP
     else:
         raise Exception("Page type isn't recognized")
 
