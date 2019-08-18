@@ -1,3 +1,4 @@
+import string
 import sys
 import datetime
 import logging
@@ -46,13 +47,12 @@ class PlayerStats():
         return self.link_base.format(self._id)
 
 
-def get_team_players(browser, team):
+def get_team_players(browser, css_selector):
     team_players = []
-
+    css_selector = string.Template(css_selector)
 
     for i in range(1, 6):  # 5 players, one indexed
-
-        node = browser.find_by_css(f"#root > main > div> div > div > div > div:nth-child(4) > div > table > tbody:nth-child({team*2}) > tr:nth-child({i})")
+        node = browser.find_by_css(css_selector.safe_substitute({'i': i}))
         cells = node.find_by_tag('td')
         name = cells[0].text
         rms = cells[1].text
@@ -64,11 +64,29 @@ def get_team_players(browser, team):
     return team_players
 
 
-def parse_baseline_gampage(browser):
+def parse_baseline_gamepage(browser):
     team_a_score, team_b_score = get_team_scores(browser)
-    print(team_a_score, team_b_score)
-    team_a_players = get_team_players(browser, 1)
-    team_b_players = get_team_players(browser, 2)
+
+    selector_template = string.Template(
+        "#root > main > div> div > div > div > div:nth-child(4) > div > table > tbody:nth-child(${team}) > tr:nth-child(${i})"
+    )
+
+    team_a_players = get_team_players(
+        browser, selector_template.safe_substitute({'team': 1*2})
+    )
+    team_b_players = get_team_players(
+        browser, selector_template.safe_substitute({'team': 2*2})
+    )
+
+    data = {
+        'A': {
+            'score': team_a_score,
+
+        },
+        'B': {
+            'score': team_b_score,
+        },
+    }
 
     return team_a_players, team_b_players
 
@@ -151,22 +169,30 @@ class GamePage:
 
     def get_results_from_range(self, first_game_id, last_game_id):
         # TODO: Gracefully handle a page not existing, and keep a tally of which don't.
-        results = []
+        game_results = []
         for game_id in tqdm(range(first_game_id, last_game_id + 1)):
 
             url = 'https://play.esea.net/match/{}'.format(game_id)
-            logger.info(f"beginning url: {url}")
 
             self.browser.visit(url)
 
             # todo: check page type
-            identify_page_type(self.browser)
+            page_type = identify_page_type(self.browser)
+            logger.info(f"Beginning url {url}, type {page_type} detected.")
 
-            this_page_data = parse_baseline_gampage(self.browser)
-            results.append(this_page_data)
-            print(this_page_data)
-        return results
+            if page_type == BASELINE_GAME_PAGE:
+                this_page_data = parse_baseline_gamepage(self.browser)
+                game_results.append(this_page_data)
 
+            elif page_type == GAME_PAGE_WITH_MATCH_RECAP:
+                logger.info(f"Page type scraper not written")
+                # game_results.append(this_page_data)
+
+            elif page_type == INVALID_GAME_PAGE:
+                logger.info(f"Page type scraper not written")
+                # TODO: add to some counter here
+
+        return game_results
 
 
 def visit_range_old_way(first_game_id, last_game_id):
