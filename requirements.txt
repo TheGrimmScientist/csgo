@@ -1,6 +1,6 @@
 six
 splinter
-chromedriver-binary==2.46.0
+chromedriver-binary==76.0.3809.68.0
 tqdm
 sqlalchemy
 django
