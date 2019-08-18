@@ -174,13 +174,6 @@ def visit_range_old_way(first_game_id, last_game_id):
         check_if_game_page_exists(game_id)
 
 
-def handle_game_id(game_id):
-    with GamePage() as scraper:
-        url = 'https://play.esea.net/match/{}'.format(game_id)
-        this_page_data = scraper.parse_baseline_game_page(url)
-        print(this_page_data)
-
-
 def identify_page_type(page):
     if page.is_text_present("Invalid Match"):
         return INVALID_GAME_PAGE
