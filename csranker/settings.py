@@ -156,7 +156,29 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
+            # 'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+    },
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
     },
 }
+
+BASELINE_GAME_PAGE = 'baseline_game_page'
+GAME_PAGE_WITH_MATCH_RECAP = 'game_page_with_recap'
+INVALID_GAME_PAGE = 'invalid_game_page'

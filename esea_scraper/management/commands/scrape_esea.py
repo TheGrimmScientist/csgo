@@ -9,6 +9,10 @@ import chromedriver_binary
 from splinter import Browser
 
 # sys.path.append(str(Path(__file__).parent / 'chromedriver'))
+from csranker.settings import INVALID_GAME_PAGE
+
+logger = logging.getLogger(__name__)
+
 
 def get_team_scores(browser):
 
@@ -55,13 +59,11 @@ def get_team_players(browser, team):
         url = cells.first.find_by_tag('a').last['href']
         team_players.append(PlayerStats(name, url, rms, kills))
 
-    print(team_players)
+    logger.info(team_players)
     return team_players
 
 
-def parse_game_page(browser, esea_url):
-    browser.visit(esea_url)
-
+def parse_baseline_gampage(browser):
     team_a_score, team_b_score = get_team_scores(browser)
     print(team_a_score, team_b_score)
     team_a_players = get_team_players(browser, 1)
@@ -146,28 +148,24 @@ class GamePage:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.browser.__exit__(exc_type, exc_val, exc_tb)
 
-    def visit_range(self, first_game_id, last_game_id):
-        for game_id in tqdm(range(first_game_id, last_game_id + 1)):
-            self.browser.visit('https://play.esea.net/match/{}'.format(game_id))
-
     def get_results_from_range(self, first_game_id, last_game_id):
         # TODO: Gracefully handle a page not existing, and keep a tally of which don't.
         results = []
         for game_id in tqdm(range(first_game_id, last_game_id + 1)):
+
             url = 'https://play.esea.net/match/{}'.format(game_id)
-            this_page_data = self.parse_game_page(url)
+            logger.info(f"beginning url: {url}")
+
+            self.browser.visit(url)
+
+            # todo: check page type
+            identify_page_type(self.browser)
+
+            this_page_data = parse_baseline_gampage(self.browser)
             results.append(this_page_data)
             print(this_page_data)
         return results
 
-    def parse_game_page(self, url):
-        try:
-            page_results = parse_game_page(self.browser, url)
-        except ElementDoesNotExist:
-            # splinter.exceptions.ElementDoesNotExist: no elements could be found with css "#body-match-stats > table:nth-child(2) > tbody > tr:nth-child(2) > td:nth-child(5)"
-            page_results = False
-
-        return page_results
 
 
 def visit_range_old_way(first_game_id, last_game_id):
@@ -178,11 +176,20 @@ def visit_range_old_way(first_game_id, last_game_id):
 def handle_game_id(game_id):
     with GamePage() as scraper:
         url = 'https://play.esea.net/match/{}'.format(game_id)
-        this_page_data = scraper.parse_game_page(url)
+        this_page_data = scraper.parse_baseline_game_page(url)
         print(this_page_data)
 
 
+def identify_page_type(page):
+    if page.is_text_present("Invalid Match"):
+        return INVALID_GAME_PAGE
+    else:
+        raise Exception("Page type isn't recognized")
+
+
 def main():
+    logger.info("Beginning command main()")
+
     # search_for_page_range_lower()  # 12155511 is first existing
     # search_for_page_range_upper()  # 14394641 is the last existing
 
@@ -196,7 +203,7 @@ def main():
     # browser.is_text_present('Invalid Match')
 
 
-    last_game_id = 14633571 + 3
+    last_game_id = 14633571 + 2
 
     # https://play.esea.net/users/13155511
 
@@ -205,7 +212,7 @@ def main():
     # visit_range_old_way(first_game_id, last_game_id)
     # Around 4 seconds per page.
 
-    print("timing for the new way:")
+    logger.info("timing for the new way:")
     results = []
     with GamePage() as scraper:
         results = scraper.get_results_from_range(first_game_id, last_game_id)
@@ -236,4 +243,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
+        logger.info("info message")
         main()
