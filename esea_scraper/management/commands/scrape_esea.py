@@ -18,21 +18,26 @@ logger = logging.getLogger(__name__)
 
 def get_team_scores(browser):
 
-    team_a_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[3]/div[1]/table/tbody/tr[1]/td[2]').first.text
-    team_b_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[3]/div[1]/table/tbody/tr[2]/td[2]').first.text
+    # team_a_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[3]/div[1]/table/tbody/tr[1]/td[2]').first.text
+    # team_b_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[3]/div[1]/table/tbody/tr[2]/td[2]').first.text
 
-    return team_a_score, team_b_score
+    team_a_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[1]/div[1]/div[1]/div[1]/span[2]').text[1:-1]
+    team_b_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[1]/div[1]/div[4]/div[1]/span[2]').text[1:-1]
+
+    return int(team_a_score), int(team_b_score)
 
 
 class PlayerStats():
 
     link_base = r"https://play.esea.net/users/{}"
 
-    def __init__(self, name, link, rms, kills):
+    def __init__(self, name, link, rms, kills, deaths, headshot_p):
         self.name = name
         self._id = link.split('/')[-1]
         self.rms = rms
         self.kills = kills
+        self.deaths = deaths
+        self.headshot_p = headshot_p
 
 
     def __repr__(self):
@@ -55,10 +60,12 @@ def get_team_players(browser, css_selector):
         node = browser.find_by_css(css_selector.safe_substitute({'i': i}))
         cells = node.find_by_tag('td')
         name = cells[0].text
-        rms = cells[1].text
-        kills = cells[2].text
+        kills = cells[1].text
+        deaths = cells[2].text
+        headshot_p = cells[6].text
+        rms = cells[12].text
         url = cells.first.find_by_tag('a').last['href']
-        team_players.append(PlayerStats(name, url, rms, kills))
+        team_players.append(PlayerStats(name, url, rms, kills, deaths, headshot_p))
 
     logger.info(team_players)
     return team_players
@@ -81,14 +88,16 @@ def parse_baseline_gamepage(browser):
     data = {
         'A': {
             'score': team_a_score,
+            'players': team_a_players
 
         },
         'B': {
             'score': team_b_score,
+            'players': team_b_players
         },
     }
 
-    return team_a_players, team_b_players
+    return data
 
 
 def search_for_page_range_lower(starting=12255802):

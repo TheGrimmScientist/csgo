@@ -56,10 +56,46 @@ class TestParseBaselineGamepage(TestCase):
     def setUp(self):
         self.browser = set_up_browser_for_testing()
 
-    def test_thing(self):
+    def test_base_scrape(self):
         game_id = 14633571
         url = 'https://play.esea.net/match/{}'.format(game_id)
         self.browser.visit(url)
         game_data = parse_baseline_gamepage(self.browser)
 
-        self.assertEqual(0, game_data)
+        self.assertIn('A', game_data)
+        self.assertIn('B', game_data)
+        game_data_A = game_data['A']
+        game_data_B = game_data['B']
+        self.assertIn('score', game_data_A)
+        self.assertIn('score', game_data_B)
+        self.assertIn('players', game_data_A)
+        self.assertIn('players', game_data_B)
+        self.assertEquals(game_data_A['score'], 16)
+        self.assertEquals(game_data_B['score'], 8)
+
+        ren = game_data_A['players'][0]
+        self.assertEquals(ren.name, 'RenZ')
+        self.assertEquals(ren.rms, '13.86')
+        self.assertEquals(ren._id, '1194196')
+        self.assertEquals(ren.kills, '18')
+        self.assertEquals(ren.deaths, '17')
+        self.assertEquals(ren.headshot_p, '19.57')
+        self.assertEquals(len(game_data_A['players']), 5)
+
+        dj = game_data_B['players'][0]
+        self.assertEquals(dj.name, 'djay')
+        self.assertEquals(dj.rms, '9.51')
+        self.assertEquals(dj._id, '441321')
+        self.assertEquals(dj.kills, '27')
+        self.assertEquals(dj.deaths, '17')
+        self.assertEquals(dj.headshot_p, '22.97')
+        self.assertEquals(len(game_data_A['players']), 5)
+
+
+class TestParseExtendedGamepage(TestCase):
+    def setUp(self):
+        self.browser = set_up_browser_for_testing()
+
+    def test_extended_scrape(self):
+        # do this test for our other page type
+        self.assertEquals(0, 1)
