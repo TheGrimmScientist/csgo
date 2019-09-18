@@ -10,7 +10,7 @@ import chromedriver_binary
 from splinter import Browser
 
 # sys.path.append(str(Path(__file__).parent / 'chromedriver'))
-from csranker.settings import INVALID_GAME_PAGE, GAME_PAGE_WITH_MATCH_RECAP, \
+from csgo.settings import INVALID_GAME_PAGE, GAME_PAGE_WITH_MATCH_RECAP, \
     BASELINE_GAME_PAGE
 
 logger = logging.getLogger(__name__)

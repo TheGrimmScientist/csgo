@@ -5,7 +5,7 @@ from django.test import TestCase
 # Create your tests here.
 from splinter import Browser
 
-from csranker.settings import INVALID_GAME_PAGE, BASELINE_GAME_PAGE, \
+from csgo.settings import INVALID_GAME_PAGE, BASELINE_GAME_PAGE, \
     GAME_PAGE_WITH_MATCH_RECAP
 from esea_scraper.management.commands.scrape_esea import identify_page_type, \
     parse_baseline_gamepage

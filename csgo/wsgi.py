@@ -1,5 +1,5 @@
 """
-WSGI config for csranker project.
+WSGI config for csgo project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'csranker.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'csgo.settings')
 
 application = get_wsgi_application()
