@@ -1,8 +1,8 @@
 import xml.etree.ElementTree as ET
 from urllib import request
 
+import requests
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 
 
 def main():
@@ -39,15 +39,23 @@ class Command(BaseCommand):
 
         # pull xml from root site.
         # save raw
-        site = request.urlopen()
+
+        url = 'https://csgo-demos-us-central1.faceit-cdn.net/'
+        page_getted = requests.get(url)
+
+        page_opened = request.urlopen(url)
+
+
+
+        raw_site_as_file = None  # TODO: this is the thing that needs cached
+        xml_file = None  # TODO: cache this too?
+
 
         # extract list of games and
 
-
-        root = ET.parse('thefile.xml').getroot()
-        for type_tag in root.findall('bar/type'):
-            value = type_tag.get('foobar')
-            print(value)
-        self.stdout.write("It's now %s" % time)
+        # root = ET.parse('thefile.xml').getroot()
+        # for type_tag in root.findall('bar/type'):
+        #     value = type_tag.get('foobar')
+        #     print(value)
 
 

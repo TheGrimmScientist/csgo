@@ -4,3 +4,4 @@ chromedriver-binary==76.0.3809.68.0
 tqdm
 sqlalchemy
 django
+requests
