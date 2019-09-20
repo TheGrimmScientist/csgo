@@ -100,6 +100,39 @@ def parse_baseline_gamepage(browser):
     return data
 
 
+def parse_extended_gamepage(browser):
+    team_a_score, team_b_score = get_team_scores(browser)
+
+    raise NotImplementedError("need to find the new template.  See next line.")
+    selector_template = string.Template(
+        "#root > main > div> div > div > div > div:nth-child(4) > div > table > tbody:nth-child(${team}) > tr:nth-child(${i})"
+    )
+
+    # team_a_players = get_team_players(
+    #     browser, selector_template.safe_substitute({'team': 1*2})
+    # )
+    # team_b_players = get_team_players(
+    #     browser, selector_template.safe_substitute({'team': 2*2})
+    # )
+
+    team_a_players = None
+    team_b_players = None
+
+    data = {
+        'A': {
+            'score': team_a_score,
+            'players': team_a_players
+
+        },
+        'B': {
+            'score': team_b_score,
+            'players': team_b_players
+        },
+    }
+
+    return data
+
+
 def search_for_page_range_lower(starting=12255802):
     """
     12155511 is the first game that exists
