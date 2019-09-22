@@ -52,18 +52,18 @@ class PlayerStats():
         return self.link_base.format(self._id)
 
 
-def get_team_players(browser, css_selector):
+def get_team_players(browser, css_selector, columns):
     team_players = []
     css_selector = string.Template(css_selector)
 
     for i in range(1, 6):  # 5 players, one indexed
         node = browser.find_by_css(css_selector.safe_substitute({'i': i}))
         cells = node.find_by_tag('td')
-        name = cells[0].text
-        kills = cells[1].text
-        deaths = cells[2].text
-        headshot_p = cells[6].text
-        rms = cells[12].text
+        name = cells[columns['name']].text
+        kills = cells[columns['kills']].text
+        deaths = cells[columns['deaths']].text
+        headshot_p = cells[columns['headshot']].text
+        rms = cells[columns['rws']].text
         url = cells.first.find_by_tag('a').last['href']
         team_players.append(PlayerStats(name, url, rms, kills, deaths, headshot_p))
 
@@ -100,23 +100,48 @@ def parse_baseline_gamepage(browser):
     return data
 
 
-def parse_extended_gamepage(browser):
+def parse_gamepage(browser, page_type):
     team_a_score, team_b_score = get_team_scores(browser)
 
-    raise NotImplementedError("need to find the new template.  See next line.")
     selector_template = string.Template(
-        "#root > main > div> div > div > div > div:nth-child(4) > div > table > tbody:nth-child(${team}) > tr:nth-child(${i})"
+        "#root > main > div> div > div > div > div:nth-child(${top_index}) > div > table > tbody:nth-child(${team}) > tr:nth-child(${i})"
     )
 
-    # team_a_players = get_team_players(
-    #     browser, selector_template.safe_substitute({'team': 1*2})
-    # )
-    # team_b_players = get_team_players(
-    #     browser, selector_template.safe_substitute({'team': 2*2})
-    # )
+    config = {
+        "extended": {
+            "team_index": [2,5],
+            "top_index": 4,
+            "columns": {
+                "name": 0,
+                "kills": 1,
+                "deaths": 2,
+                "headshot": 6,
+                "rws": 14,
+            }
+        },
+        "basic": {
+            "team_index": [2,4],
+            "top_index": 4,
+            "columns": {
+                "name": 0,
+                "kills": 1,
+                "deaths": 2,
+                "headshot": 6,
+                "rws": 12,
+            }
+        }
+    }
 
-    team_a_players = None
-    team_b_players = None
+    team_a_players = get_team_players(
+        browser, selector_template.safe_substitute({'top_index': config[page_type]['top_index'],
+                                                    'team': config[page_type]['team_index'][0]}),
+        config[page_type]['columns']
+    )
+    team_b_players = get_team_players(
+        browser, selector_template.safe_substitute({'top_index': config[page_type]['top_index'],
+                                                    'team': config[page_type]['team_index'][1]}),
+        config[page_type]['columns']
+    )
 
     data = {
         'A': {

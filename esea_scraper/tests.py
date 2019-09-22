@@ -8,8 +8,7 @@ from splinter import Browser
 
 from csgo.settings import INVALID_GAME_PAGE, BASELINE_GAME_PAGE, \
     GAME_PAGE_WITH_MATCH_RECAP
-from esea_scraper.management.commands.scrape_esea import identify_page_type, \
-    parse_baseline_gamepage, parse_extended_gamepage
+from esea_scraper.management.commands.scrape_esea import identify_page_type, parse_gamepage
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -61,7 +60,7 @@ class TestParseBaselineGamepage(TestCase):
         game_id = 14633571
         url = 'https://play.esea.net/match/{}'.format(game_id)
         self.browser.visit(url)
-        game_data = parse_baseline_gamepage(self.browser)
+        game_data = parse_gamepage(self.browser, 'basic')
 
         self.assertIn('A', game_data)
         self.assertIn('B', game_data)
@@ -101,7 +100,7 @@ class TestParseExtendedGamepage(TestCase):
         game_id = 14633572
         url = 'https://play.esea.net/match/{}'.format(game_id)
         self.browser.visit(url)
-        game_data = parse_extended_gamepage(self.browser)
+        game_data = parse_gamepage(self.browser, 'extended')
 
         # Mock('esea_scraper/management/commands/scrape_esea/get_team_players')
 
@@ -117,19 +116,19 @@ class TestParseExtendedGamepage(TestCase):
         self.assertEquals(game_data_B['score'], 11)
 
         ren = game_data_A['players'][0]
-        self.assertEquals(ren.name, 'RenZ')
-        self.assertEquals(ren.rms, '13.86')
-        self.assertEquals(ren._id, '1194196')
-        self.assertEquals(ren.kills, '18')
-        self.assertEquals(ren.deaths, '17')
-        self.assertEquals(ren.headshot_p, '19.57')
+        self.assertEquals(ren.name, 'Volkh')
+        self.assertEquals(ren.rms, '17.02')
+        self.assertEquals(ren._id, '1770355')
+        self.assertEquals(ren.kills, '28')
+        self.assertEquals(ren.deaths, '15')
+        self.assertEquals(ren.headshot_p, '11.96')
         self.assertEquals(len(game_data_A['players']), 5)
 
         dj = game_data_B['players'][0]
-        self.assertEquals(dj.name, 'djay')
-        self.assertEquals(dj.rms, '9.51')
-        self.assertEquals(dj._id, '441321')
-        self.assertEquals(dj.kills, '27')
-        self.assertEquals(dj.deaths, '17')
-        self.assertEquals(dj.headshot_p, '22.97')
+        self.assertEquals(dj.name, 'Znorux')
+        self.assertEquals(dj.rms, '11.07')
+        self.assertEquals(dj._id, '1064860')
+        self.assertEquals(dj.kills, '21')
+        self.assertEquals(dj.deaths, '20')
+        self.assertEquals(dj.headshot_p, '17.65')
         self.assertEquals(len(game_data_A['players']), 5)
