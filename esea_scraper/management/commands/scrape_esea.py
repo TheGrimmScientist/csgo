@@ -17,17 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 def get_team_scores(browser):
-
-    # team_a_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[3]/div[1]/table/tbody/tr[1]/td[2]').first.text
-    # team_b_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[3]/div[1]/table/tbody/tr[2]/td[2]').first.text
-
     team_a_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[1]/div[1]/div[1]/div[1]/span[2]').text[1:-1]
     team_b_score = browser.find_by_xpath(r'//*[@id="root"]/main/div[2]/div/div/div/div[1]/div[1]/div[4]/div[1]/span[2]').text[1:-1]
 
     return int(team_a_score), int(team_b_score)
 
 
-class PlayerStats():
+class PlayerStats:
 
     link_base = r"https://play.esea.net/users/{}"
 
@@ -38,7 +34,6 @@ class PlayerStats():
         self.kills = kills
         self.deaths = deaths
         self.headshot_p = headshot_p
-
 
     def __repr__(self):
         return "player name is: {}, player url is: {}".format(self.name, self.link)
