@@ -66,35 +66,6 @@ def get_team_players(browser, css_selector, columns):
     return team_players
 
 
-def parse_baseline_gamepage(browser):
-    team_a_score, team_b_score = get_team_scores(browser)
-
-    selector_template = string.Template(
-        "#root > main > div> div > div > div > div:nth-child(4) > div > table > tbody:nth-child(${team}) > tr:nth-child(${i})"
-    )
-
-    team_a_players = get_team_players(
-        browser, selector_template.safe_substitute({'team': 1*2})
-    )
-    team_b_players = get_team_players(
-        browser, selector_template.safe_substitute({'team': 2*2})
-    )
-
-    data = {
-        'A': {
-            'score': team_a_score,
-            'players': team_a_players
-
-        },
-        'B': {
-            'score': team_b_score,
-            'players': team_b_players
-        },
-    }
-
-    return data
-
-
 def parse_gamepage(browser, page_type):
     team_a_score, team_b_score = get_team_scores(browser)
 
