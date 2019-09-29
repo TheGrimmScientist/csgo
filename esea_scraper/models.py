@@ -45,5 +45,19 @@ class Game(models.Model):
         UserGame, related_name='p4b', on_delete=models.CASCADE)
     player_5_b = models.ForeignKey(
         UserGame, related_name='p5b', on_delete=models.CASCADE)
+    INVALID = 'I'
+    FORFEIT = 'F'
+    BASE = 'B'
+    EXTENDED = 'E'
+    GAME_TYPE = [
+        (INVALID, 'Invalid'),
+        (FORFEIT, 'Forfeit'),
+        (BASE, 'Base'),
+        (EXTENDED, 'Extended'),
+    ]
+    game_type = models.CharField(
+        max_length=1,
+        choices=GAME_TYPE
+    )
 
     # on_delete docs: https://stackoverflow.com/a/38389488/1224255

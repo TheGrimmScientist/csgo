@@ -132,3 +132,13 @@ class TestParseExtendedGamepage(TestCase):
         self.assertEquals(dj.deaths, '20')
         self.assertEquals(dj.headshot_p, '17.65')
         self.assertEquals(len(game_data_A['players']), 5)
+
+
+
+class TestParseForfeitedGamepage(TestCase):
+    def setUp(self):
+        self.browser = set_up_browser_for_testing()
+
+    def test_forfeited_scrape(self):
+        assert 'we definitely have"t written this yet'
+

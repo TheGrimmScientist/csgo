@@ -23,30 +23,6 @@ def get_team_scores(browser):
     return int(team_a_score), int(team_b_score)
 
 
-class PlayerStats:
-
-    link_base = r"https://play.esea.net/users/{}"
-
-    def __init__(self, name, link, rms, kills, deaths, headshot_p):
-        self.name = name
-        self._id = link.split('/')[-1]
-        self.rms = rms
-        self.kills = kills
-        self.deaths = deaths
-        self.headshot_p = headshot_p
-
-    def __repr__(self):
-        return "player name is: {}, player url is: {}".format(self.name, self.link)
-
-
-    def __str__(self):
-        return "player name is: {}, player url is: {}".format(self.name, self.link)
-
-    @property
-    def link(self):
-        return self.link_base.format(self._id)
-
-
 def get_team_players(browser, css_selector, columns):
     team_players = []
     css_selector = string.Template(css_selector)
@@ -60,7 +36,7 @@ def get_team_players(browser, css_selector, columns):
         headshot_p = cells[columns['headshot']].text
         rms = cells[columns['rws']].text
         url = cells.first.find_by_tag('a').last['href']
-        team_players.append(PlayerStats(name, url, rms, kills, deaths, headshot_p))
+        team_players.append({"name": name, "url": url, "rms": rms, "kills": kills, "deaths": deaths, "headshot_p": headshot_p})
 
     logger.info(team_players)
     return team_players
@@ -74,7 +50,7 @@ def parse_gamepage(browser, page_type):
     )
 
     config = {
-        "extended": {
+        GAME_PAGE_WITH_MATCH_RECAP: {
             "team_index": [2,5],
             "top_index": 4,
             "columns": {
@@ -85,7 +61,7 @@ def parse_gamepage(browser, page_type):
                 "rws": 14,
             }
         },
-        "basic": {
+        BASELINE_GAME_PAGE: {
             "team_index": [2,4],
             "top_index": 4,
             "columns": {
@@ -124,8 +100,6 @@ def parse_gamepage(browser, page_type):
     return data
 
 
-
-
 class GamePage:
     def __init__(self):
         self.browser = Browser('chrome', incognito=True, headless=False)
@@ -150,17 +124,12 @@ class GamePage:
             page_type = identify_page_type(self.browser)
             logger.info(f"Beginning url {url}, type {page_type} detected.")
 
-            if page_type == BASELINE_GAME_PAGE:
-                this_page_data = parse_baseline_gamepage(self.browser)
+            if page_type != INVALID_GAME_PAGE:
+                this_page_data = parse_gamepage(self.browser, page_type)
                 game_results.append(this_page_data)
 
-            elif page_type == GAME_PAGE_WITH_MATCH_RECAP:
-                logger.info(f"Page type scraper not written")
-                # game_results.append(this_page_data)
-
-            elif page_type == INVALID_GAME_PAGE:
-                logger.info(f"Page type scraper not written")
-                # TODO: add to some counter here
+            else:
+                logger.info(f"gameID {game_id} is invalid.")
 
         return game_results
 
@@ -204,7 +173,10 @@ def main():
     logger.info("timing for the new way:")
     results = []
     with GamePage() as scraper:
-        results = scraper.get_results_from_range(first_game_id, last_game_id)
+        results = scraper.get_results_from_range(14633571, 14633574)
+
+    logger.info(results)
+    return
 
     # for result in results:
     #     if result:

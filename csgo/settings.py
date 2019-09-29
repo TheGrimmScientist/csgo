@@ -166,3 +166,4 @@ LOGGING = {
 BASELINE_GAME_PAGE = 'baseline_game_page'
 GAME_PAGE_WITH_MATCH_RECAP = 'game_page_with_recap'
 INVALID_GAME_PAGE = 'invalid_game_page'
+FORFEIT_GAME = 'forfeit_game_page'
