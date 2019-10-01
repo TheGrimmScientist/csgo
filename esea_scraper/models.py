@@ -20,31 +20,34 @@ class UserGame(models.Model):
 class Game(models.Model):
     esea_game_id = models.IntegerField(primary_key=True)  # Comes from the url
 
-    match_start_time = models.DateTimeField()
-    match_end_time = models.DateTimeField()
     injestion_date = models.DateTimeField()
+    match_start_time = models.DateTimeField(null=True)
+    match_end_time = models.DateTimeField(null=True)
+
+    team_a_score = models.IntegerField(null=True)
+    team_b_score = models.IntegerField(null=True)
 
     player_1_a = models.ForeignKey(
-        UserGame, related_name='p1a', on_delete=models.CASCADE)
+        UserGame, related_name='p1a', on_delete=models.CASCADE, null=True)
     player_2_a = models.ForeignKey(
-        UserGame, related_name='p2a', on_delete=models.CASCADE)
+        UserGame, related_name='p2a', on_delete=models.CASCADE, null=True)
     player_3_a = models.ForeignKey(
-        UserGame, related_name='p3a', on_delete=models.CASCADE)
+        UserGame, related_name='p3a', on_delete=models.CASCADE, null=True)
     player_4_a = models.ForeignKey(
-        UserGame, related_name='p4a', on_delete=models.CASCADE)
+        UserGame, related_name='p4a', on_delete=models.CASCADE, null=True)
     player_5_a = models.ForeignKey(
-        UserGame, related_name='p5a', on_delete=models.CASCADE)
+        UserGame, related_name='p5a', on_delete=models.CASCADE, null=True)
 
     player_1_b = models.ForeignKey(
-        UserGame, related_name='p1b', on_delete=models.CASCADE)
+        UserGame, related_name='p1b', on_delete=models.CASCADE, null=True)
     player_2_b = models.ForeignKey(
-        UserGame, related_name='p2b', on_delete=models.CASCADE)
+        UserGame, related_name='p2b', on_delete=models.CASCADE, null=True)
     player_3_b = models.ForeignKey(
-        UserGame, related_name='p3b', on_delete=models.CASCADE)
+        UserGame, related_name='p3b', on_delete=models.CASCADE, null=True)
     player_4_b = models.ForeignKey(
-        UserGame, related_name='p4b', on_delete=models.CASCADE)
+        UserGame, related_name='p4b', on_delete=models.CASCADE, null=True)
     player_5_b = models.ForeignKey(
-        UserGame, related_name='p5b', on_delete=models.CASCADE)
+        UserGame, related_name='p5b', on_delete=models.CASCADE, null=True)
     INVALID = 'I'
     FORFEIT = 'F'
     BASE = 'B'
