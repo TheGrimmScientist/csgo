@@ -9,9 +9,11 @@ from tqdm import tqdm
 import chromedriver_binary
 from splinter import Browser
 
+from esea_scraper.models import Game
+
+
 # sys.path.append(str(Path(__file__).parent / 'chromedriver'))
-from csgo.settings import INVALID_GAME_PAGE, GAME_PAGE_WITH_MATCH_RECAP, \
-    BASELINE_GAME_PAGE
+
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +52,7 @@ def parse_gamepage(browser, page_type):
     )
 
     config = {
-        GAME_PAGE_WITH_MATCH_RECAP: {
+        Game.EXTENDED: {
             "team_index": [2,5],
             "top_index": 4,
             "columns": {
@@ -61,7 +63,7 @@ def parse_gamepage(browser, page_type):
                 "rws": 14,
             }
         },
-        BASELINE_GAME_PAGE: {
+        Game.BASE: {
             "team_index": [2,4],
             "top_index": 4,
             "columns": {
@@ -124,7 +126,7 @@ class GamePage:
             page_type = identify_page_type(self.browser)
             logger.info(f"Beginning url {url}, type {page_type} detected.")
 
-            if page_type != INVALID_GAME_PAGE:
+            if page_type != Game.INVALID:
                 this_page_data = parse_gamepage(self.browser, page_type)
                 game_results.append(this_page_data)
 
@@ -136,11 +138,11 @@ class GamePage:
 
 def identify_page_type(page):
     if page.is_text_present("Invalid Match"):
-        return INVALID_GAME_PAGE
+        return Game.INVALID
     elif page.is_text_present("Detailed advanced match statistics were not processed for this match"):
-        return BASELINE_GAME_PAGE
+        return Game.BASE
     elif page.is_text_present("Match Recap"):
-        return GAME_PAGE_WITH_MATCH_RECAP
+        return Game.EXTENDED
     else:
         raise Exception("Page type isn't recognized")
 

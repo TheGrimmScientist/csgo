@@ -1,14 +1,12 @@
 import logging
+from unittest import skip
 from unittest.mock import Mock
 
 from django.test import TestCase
-
-# Create your tests here.
 from splinter import Browser
 
-from csgo.settings import INVALID_GAME_PAGE, BASELINE_GAME_PAGE, \
-    GAME_PAGE_WITH_MATCH_RECAP
 from esea_scraper.management.commands.scrape_esea import identify_page_type, parse_gamepage
+from esea_scraper.models import Game
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -31,7 +29,7 @@ class TestPageTypeChecker(TestCase):
         self.browser.visit(url)
         page_type = identify_page_type(self.browser)
 
-        self.assertEqual(page_type, BASELINE_GAME_PAGE)
+        self.assertEqual(page_type, Game.BASE)
 
     def test_game_page_with_match_recap_properly_identified(self):
         game_id = 14633572
@@ -40,7 +38,7 @@ class TestPageTypeChecker(TestCase):
         self.browser.visit(url)
         page_type = identify_page_type(self.browser)
 
-        self.assertEqual(page_type, GAME_PAGE_WITH_MATCH_RECAP)
+        self.assertEqual(page_type, Game.EXTENDED)
 
     def test_invalid_match_properly_identified(self):
         game_id = 14633573
@@ -49,7 +47,16 @@ class TestPageTypeChecker(TestCase):
         self.browser.visit(url)
         page_type = identify_page_type(self.browser)
 
-        self.assertEqual(page_type, INVALID_GAME_PAGE)
+        self.assertEqual(page_type, Game.INVALID)
+
+    def test_forfeit_match_properly_identified(self):
+        game_id = 14633581
+
+        url = 'https://play.esea.net/match/{}'.format(game_id)
+        self.browser.visit(url)
+        page_type = identify_page_type(self.browser)
+
+        self.assertEqual(page_type, Game.FORFEIT)
 
 
 class TestParseBaselineGamepage(TestCase):
@@ -60,7 +67,7 @@ class TestParseBaselineGamepage(TestCase):
         game_id = 14633571
         url = 'https://play.esea.net/match/{}'.format(game_id)
         self.browser.visit(url)
-        game_data = parse_gamepage(self.browser, 'basic')
+        game_data = parse_gamepage(self.browser, Game.BASE)
 
         self.assertIn('A', game_data)
         self.assertIn('B', game_data)
@@ -100,7 +107,7 @@ class TestParseExtendedGamepage(TestCase):
         game_id = 14633572
         url = 'https://play.esea.net/match/{}'.format(game_id)
         self.browser.visit(url)
-        game_data = parse_gamepage(self.browser, 'extended')
+        game_data = parse_gamepage(self.browser, Game.EXTENDED)
 
         # Mock('esea_scraper/management/commands/scrape_esea/get_team_players')
 
@@ -134,11 +141,11 @@ class TestParseExtendedGamepage(TestCase):
         self.assertEquals(len(game_data_A['players']), 5)
 
 
-
+@skip
 class TestParseForfeitedGamepage(TestCase):
     def setUp(self):
         self.browser = set_up_browser_for_testing()
 
     def test_forfeited_scrape(self):
-        assert 'we definitely have"t written this yet'
+        assert False,  'we definitely have"t written this yet'
 

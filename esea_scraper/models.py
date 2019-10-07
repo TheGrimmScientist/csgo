@@ -14,8 +14,6 @@ class UserGame(models.Model):
     deaths = models.IntegerField()
     headshot_p = models.FloatField()
 
-    pass
-
 
 class Game(models.Model):
     esea_game_id = models.IntegerField(primary_key=True)  # Comes from the url
