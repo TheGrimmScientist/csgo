@@ -5,3 +5,5 @@ tqdm
 sqlalchemy
 django
 requests
+pymc3
+jupyter
