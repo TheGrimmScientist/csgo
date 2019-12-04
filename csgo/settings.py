@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'esea_scraper',
-    'faceit_scraper',
 ]
 
 
